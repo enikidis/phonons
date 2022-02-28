@@ -1,0 +1,138 @@
+# LAMMPS Input for creation of a Nanowire
+dimension 3
+boundary p p p #Periodic boundary 
+units metal
+atom_style atomic 
+# Stillinger weber
+pair_style sw
+#=====================================================================================================================
+read_data coord-ORI.data # Si amorphous of A Tanguy 
+#=====================================================================================================================
+variable T equal 100 # Annealing temp
+#=====================================================================================================================
+#Direction of axis x↑,y→,z⦻
+variable LBox equal 1500# Size of the Box
+variable HBox equal 477.82 # 
+variable hBox equal 40 # 
+#=====================================================================================================================
+# Adaptation to lattic length
+variable a equal 5.43
+variable LBoxF equal (v_LBox-v_LBox%$a) # insuring an interger number of lattice parameter for periodicity
+variable HBoxF equal (v_HBox-v_HBox%$a)
+variable hBoxF equal (v_hBox-v_hBox%$a)
+#=====================================================================================================================
+variable A equal 80 # hight of bars x↑ *and slit width y→
+variable c equal 30  # slit width
+variable clat equal 103 # width of a-Si barriers y→
+variable D equal 610 # distance to the screen
+variable Lleft equal (((v_LBoxF)/2)-$A-$D)/2 # distance between the holes 
+#=====================================================================================================================
+neighbor       0.3 bin # neighboorhood list size param
+neigh_modify   delay 10 # nb of step between list reconstruction
+# Replicate if necessary (to have the full Amorphous)
+if "$(v_LBoxF) > $(lx)" then "replicate 10 4 1"
+if "$(v_HBoxF) > $(ly)" then "replicate 4 4 1"
+#=====================================================================================================================
+#########################################################
+# Pair
+#########################################################
+### Si SW 
+pair_coeff * * SiVBM.sw Si
+mass 1 28.0855 #Si
+#=====================================================================================================================
+#########################################################
+# Geom
+#########################################################
+# Centering of amorphous sample
+variable Alx equal lx
+variable Aly equal ly
+variable Alz equal lz
+run 0
+#=====================================================================================================================
+#WHY IS THIS LINE HERE
+change_box all x final 0 $(v_Alx) y final 0 $(ly) z final $(-lz/2) $(lz/2) remap
+#=================Resizing==============================================
+#nBOX  is a block designed from (LBoxF,HBoxF,BoxF) 
+region nBOX block 0 $(v_LBoxF)  0 $(v_HBoxF)  0 $(v_hBoxF)  side out
+#Deleting the region outside of (LBoxF,HBoxF,BoxF)
+delete_atoms region nBOX 
+#==========Shrinking the the simulation box to match the structure======
+change_box all x final 0 $(v_LBoxF) z final 0 $(v_hBoxF) y final 0 $(v_HBoxF)
+#=====================================================================================================================
+#=========Cutting the amorphous part we want to keep==================================================================
+#block args = xlo,xhi,ylo,yhi,zlo,zhi
+#Direction of axis x↑,y→,z⦻
+#########################################################
+# Top Slits x↑
+#########################################################
+#===Left Top block========================================================== 
+region tl block  $(v_D+v_Lleft*4+v_A) $(v_D+v_Lleft*4+v_A+v_A) 0 $(v_clat) 0 $(v_hBoxF)  units box # NW
+#===Right Top block========================================================= 
+variable test equal ly
+print "${test}"
+region tr block  $(v_D+v_Lleft*4+v_A) $(v_D+v_Lleft*4+v_A+v_A) $(ly-v_clat) EDGE 0 $(v_hBoxF)  units box # NW
+#===Midle Top block=========================================================
+region tm block  $(v_D+v_Lleft*4+v_A) $(v_D+v_Lleft*4+v_A+v_A) $(v_clat+v_c) $(ly-v_clat-v_c) 0 $(v_hBoxF)  units box # NW
+#########################################################
+# Bottom Slits x↑
+#########################################################
+#===Left Bottom block========================================================== 
+region bl block  $(v_D) $(v_D+v_A) 0 $(v_clat) 0 $(v_hBoxF)  units box # NW
+#===Right Bottom block========================================================= 
+variable test equal ly
+print "${test}"
+region br block  $(v_D) $(v_D+v_A) $(ly-v_clat) EDGE 0 $(v_hBoxF)  units box # NW
+#===Midle Bottom block=========================================================
+region bm block  $(v_D) $(v_D+v_A) $(v_clat+v_c) $(ly-v_clat-v_c) 0 $(v_hBoxF)  units box # NW
+#=====================================================================================================================
+#============Creating a region with all of the blocks===================
+region Bar union 6 bl br bm tl tr tm
+#======Creating a region with everything else but the three blocks======
+region cry union 6 bl br bm tl tr tm side out
+#=====Creating a group from the region "Bar" thus the three blocks======
+group gBar region Bar
+#Creating a group named gnBar (negative) witch is all atoms except the three bars
+group gnBar subtract all gBar
+#======Delete everything except the three bars that are amorphous=======
+delete_atoms group  gnBar# Removing the non amorphous part
+#================Defining lattice for generating c-SI===================
+lattice diamond $a orient x 1 0 0 # Value from equilibrium fo sw ( taken from the Elastic example of LAMMPS)
+#=Filling the empty region of the simulation box named "cry" with c-SI==
+create_atoms 1 region cry# Filling the rest with c-SI
+#====At the boundary of amorphous/crystal Si atoms tend to overlap=====
+delete_atoms overlap 2 all all # Removing overlapping atoms
+write_data ADEBUG.data
+#=====================================================================================================================
+#########################################################
+# Dynamic (Relaxation)
+#########################################################
+compute kinAt all ke/atom
+compute potAt all pe/atom
+# Output définition
+thermo         100
+thermo_style   custom step ke pe temp press vol fnorm pxx pyy pzz pxy pxz pyz
+thermo_modify format line "%d %.8e %.8e %.8e %.8e %.2f %.8e %8e %.8e %.8e %.8e %.8e %.8e"
+dump 1 all custom 1000 Relax.dump.gz id type x y z c_kinAt c_potAt
+run 0
+# Min pos
+minimize 0 1.0e-8 10000 100000 # saturation rapide critère sur energie pour eviter une stagnation
+# Min size Box
+fix 1 all box/relax iso 0.0 vmax 0.001
+minimize 0 1.0e-8 10000 50000
+unfix 1
+write_data V0Min.data
+# thermalisation
+velocity all create 100 564986 mom yes rot yes  
+# Recuit nvt
+fix 1 all npt iso 0.0 0.0 1 temp 100.0 100.0 .1 
+run 10000
+unfix 1
+velocity all create 0 564986 mom yes rot yes  
+fix 1 all box/relax x 0.0 vmax 0.001
+minimize 0 1.0e-8 10000 50000
+unfix 1
+write_data V0Boxmin.data
+minimize 0 1.0e-8 10000 50000
+write_data V0Re.data
+fix 1 all nve # TO check that there is no spontaneous evolution (check the maximum ek with ovito )
+run 10000
