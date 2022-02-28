@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --job-name=double_cre 
+#SBATCH --nodes=1               # 5 nodes
+#SBATCH --ntasks-per-node=20     # Number of tasks to be invoked on each node
+#SBATCH --cpus-per-task=1        # Threads per task(=1) for pure MPI
+#SBATCH --time=3:00:00           # Run time in hh:mm:ss
+#SBATCH --partition=compute      # Partition
+#SBATCH --account=pr010034_thin  # Replace with your system project
+#SBATCH --error=job.%J.out
+#SBATCH --output=job.%J.out
+
+module purge
+ulimit -s unlimited
+module load gnu/9.3.0 
+module load intel/19.0.1 
+module load intelmpi/2018
+
+echo "Starting at `date`"
+echo "Running on hosts: $SLURM_NODELIST"
+echo "Running on $SLURM_NNODES nodes."
+echo "Running on $SLURM_NPROCS processors."
+echo "Job id is $SLURM_JOBID"
+
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+module load lammps/29Sep21
+srun lmp_hybrid < final_creation.in
+
+echo "Program finished with exit code $? at: `date`"
