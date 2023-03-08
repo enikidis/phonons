@@ -7,7 +7,7 @@ from pylab import *
 from random import getrandbits
 
 class Bohm:
-    def __init__(self,particles=200,plot=False,save=False,**kwargs):
+    def __init__(self,particles=10,plot=False,save=False,**kwargs):
         self.start = time.time()
 
         self.slitdistance = kwargs.get('slitdistance',1.)
