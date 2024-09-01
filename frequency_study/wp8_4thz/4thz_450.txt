@@ -1,5 +1,5 @@
 # Peak detection parameters
-peak_height = 8e-10 # The minimum height a peak must have to be detected.
+peak_height = 9e-10 # The minimum height a peak must have to be detected.
 peak_threshold = 1e-15  # Peaks must have a height greater than this value
 peak_distance = 80  #Ensures that detected peaks are at least this many data points apart.
 peak_prominence = 4e-15  # Peaks must stand out from the surrounding baseline by at least this amount.
@@ -7,10 +7,8 @@ peak_width = 0  # Peaks must be at least this wide.
 =======================================================================================================
 # x coordinates
 23.07
-39.36
-55.65
-80.09
-104.53
-127.61
-169.70
-185.99
+69.23
+90.95
+115.39
+137.11
+183.27
