@@ -11,12 +11,12 @@ flowchart TD;
     G1-->F0{**Frequency Study**<br> }
     
     subgraph Frequency Study
-        F0-->|M.D.|F1(((**Geometry 1**<br> f=1THz)))
-        F0-->|M.D.|F2(((**Geometry 2**<br> f=2THz)))
-        F0-->|M.D.|F3(((**Geometry 3**<br> f=3THz)))
-        F0-->|M.D.|F4(((**Geometry 4**<br> f=4THz)))
-        F0-->|M.D.|F5(((**Geometry 5**<br> f=5THz)))
-        F0-->|M.D.|F6(((**Geometry 6**<br> f=6THz)))
+        F0-->|M.D.|F1(((**Frequency Case 1**<br> f=1THz)))
+        F0-->|M.D.|F2(((**Frequency Case 2**<br> f=2THz)))
+        F0-->|M.D.|F3(((**Frequency Case 3**<br> f=3THz)))
+        F0-->|M.D.|F4(((**Frequency Case 4**<br> f=4THz)))
+        F0-->|M.D.|F5(((**Frequency Case 5**<br> f=5THz)))
+        F0-->|M.D.|F6(((**Frequency Case 6**<br> f=6THz)))
         F1-->FED0
         F2-->FED0
         F3-->FED0
