@@ -1,4 +1,5 @@
 ```mermaid
+%%{init: {'theme': 'default', 'themeVariables': { 'fontSize': '26px', 'fontFamily': 'Arial' }}}%%
 flowchart TD;
     A[Generate Crystal Blocks]--> B{Geometrical Structures<br> Generation}
     B-->|Structure Generation|G1[(**Geometry 1**<br> A=4nm, d=8.6nm, c=3nm)]
@@ -42,4 +43,4 @@ flowchart TD;
     C6-->FED1
     C7-->FED1
     FED1-->|Conclusions|FED2[Graphs]
-```   
+```
