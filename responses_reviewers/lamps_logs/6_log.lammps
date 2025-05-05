@@ -1,0 +1,164 @@
+LAMMPS (29 Sep 2021)
+  using 1 OpenMP thread(s) per MPI task
+#Wave packet programme, the folder in which it is executed must contain a folder named "res" to store the results
+boundary p p p #Periodic boundary
+
+atom_style atomic
+pair_style sw
+units metal
+neighbor       0.3 bin # neighboorhood list size param
+neigh_modify   delay 10 # nb of step between list reconstruction
+
+
+variable Data string V2Re.data# file to read
+read_data ${Data}
+read_data V2Re.data
+Reading data file ...
+  orthogonal box = (0.31145355 -0.053171263 -0.0069962189) to (596.98855 206.39317 27.156996)
+  10 by 2 by 1 MPI processor grid
+  reading atoms ...
+  157000 atoms
+  reading velocities ...
+  157000 velocities
+  read_data CPU = 0.436 seconds
+variable RC equal 25
+
+variable Nbin equal 300 # discretisation for the output (not usefull here)
+
+variable lxOr equal $(lx)
+variable lxOr equal 596.67709290358436647
+
+
+
+
+pair_coeff * * SiVBM.sw Si # Potential used see DOI: 10.1016/S0022-3093(01)00342-8 and https://doi.org/10.1088/0953-8984/26/5/055011
+Reading sw potential file SiVBM.sw with DATE: 2007-06-11
+
+#replicate : repeter 6 fois sur x :
+
+# Velocity zeroing
+velocity all create 0.0 485658
+thermo         1000
+thermo_style   custom step ke pe temp press vol fnorm pxx pyy pzz
+thermo_modify format line "%d %.8e %.8e %.8e %.8e %.2f %.8e %8e %.8e %.8e "
+minimize 0 1.0e-8 10000 100000
+WARNING: Using 'neigh_modify every 1 delay 0 check yes' setting during minimization (src/min.cpp:188)
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 4.07118
+  ghost atom cutoff = 4.07118
+  binsize = 2.03559, bins = 294 102 14
+  1 neighbor lists, perpetual/occasional/extra = 1 0 0
+  (1) pair sw, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+Per MPI rank memory allocation (min/avg/max) = 4.451 | 4.951 | 5.022 Mbytes
+Step KinEng PotEng Temp Press Volume Fnorm Pxx Pyy Pzz 
+0 0.00000000e+00 -5.16295066e+05 0.00000000e+00 -4.01596201e+02 3346109.58 9.77077106e-09 -5.861078e+00 -5.88554558e+02 -6.10372966e+02 
+1 0.00000000e+00 -5.16295066e+05 0.00000000e+00 -4.01596201e+02 3346109.58 4.60046696e-09 -5.861078e+00 -5.88554558e+02 -6.10372966e+02 
+Loop time of 0.0387198 on 20 procs for 1 steps with 157000 atoms
+
+85.3% CPU use with 20 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+     -516295.066315616  -516295.066315616  -516295.066315616
+  Force two-norm initial, final = 9.7707711e-09 4.6004670e-09
+  Force max component initial, final = 9.3399947e-11 4.5100215e-11
+  Final line search alpha, max atom move = 1.0000000 4.5100215e-11
+  Iterations, force evaluations = 1 2
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.018155   | 0.027616   | 0.029212   |   1.9 | 71.32
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.0014291  | 0.0029258  | 0.012549   |   5.8 |  7.56
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.008178   |            |       | 21.12
+
+Nlocal:        7850.00 ave        8360 max        4457 min
+Histogram: 2 0 0 0 0 0 0 2 0 16
+Nghost:        4516.35 ave        4965 max        2574 min
+Histogram: 2 0 0 0 1 1 0 2 2 12
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 20 0 0 0 0 0 0 0 0 0
+FullNghs:      125074.0 ave      133760 max       68223 min
+Histogram: 2 0 0 0 0 0 0 2 0 16
+
+Total # of neighbors = 2501482
+Ave neighs/atom = 15.933006
+Neighbor list builds = 0
+Dangerous builds = 0
+
+
+
+
+write_data 6${Data}
+write_data 6V2Re.data
+System init for write_data ...
+
+########################
+# Wave packet variable
+#######################
+
+variable f index  6  #frequency of the excitation (can be a list)
+# Region of the impulse
+
+
+variable xh equal $(xhi)
+variable xh equal 596.98854645178585088
+variable xl equal $(xlo)
+variable xl equal 0.31145354820151421871
+variable ExPos equal 145 # Position of the excitation
+region Imp block $(-2+v_ExPos) $(2+v_ExPos) EDGE EDGE EDGE EDGE
+region Imp block 143 $(2+v_ExPos) EDGE EDGE EDGE EDGE
+region Imp block 143 147 EDGE EDGE EDGE EDGE
+
+region	rfixed	block	$(v_xh-5) $(v_xh) EDGE EDGE EDGE EDGE # Fixed atoms at the ends
+region	rfixed	block	591.98854645178596456 $(v_xh) EDGE EDGE EDGE EDGE 
+region	rfixed	block	591.98854645178596456 596.98854645178596456 EDGE EDGE EDGE EDGE 
+region	rfixed2	block	$(v_xl) $(v_xl+5) EDGE EDGE EDGE EDGE
+region	rfixed2	block	0.31145354820151399666 $(v_xl+5) EDGE EDGE EDGE EDGE
+region	rfixed2	block	0.31145354820151399666 5.3114535482015137191 EDGE EDGE EDGE EDGE
+
+label Dyn_loop # each iteration of this loops test a frequency
+    delete_atoms group all #Reseting
+Deleted 157000 atoms, new total = 0
+    read_data 6${Data} add merge #Reseting
+    read_data 6V2Re.data add merge 
+Reading data file ...
+  orthogonal box = (0.31145355 -0.053171263 -0.0069962189) to (596.98855 206.39317 27.156996)
+  10 by 2 by 1 MPI processor grid
+  reading atoms ...
+  157000 atoms
+  reading velocities ...
+  157000 velocities
+  read_data CPU = 0.436 seconds
+    reset_timestep 0 #Reseting
+
+
+    ################### Beginning of dyn definition
+    group AtImpulse region Imp
+1140 atoms in group AtImpulse
+
+	group fixed1 region rfixed
+1140 atoms in group fixed1
+    group fixed2 region rfixed2
+1520 atoms in group fixed2
+
+    variable w equal v_f*2*PI
+    variable tau equal .36#
+    variable amp equal 3.773e-4*sin(v_w*(dt*step-3*v_tau))*(((step*dt-3*v_tau)<0)*exp(-(step*dt-3*v_tau)*(step*dt-3*v_tau)/(2*v_tau*v_tau))+((step*dt-3*v_tau)>0))
+    #variable amp equal 3.773e-4*sin(v_w*(dt*step-3*v_tau))*exp(-(step*dt-3*v_tau)*(step*dt-3*v_tau)/(2*v_tau*v_tau)) # Force amplitude
+	#variable amp equal 3.773e-4*sin(v_w*(dt*step-3*v_tau))# continous wave
+
+
+    # Output définition
+    log res/WP$f.log
+    log res/WP6.log
