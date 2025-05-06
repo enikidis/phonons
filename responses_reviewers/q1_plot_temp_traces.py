@@ -4,10 +4,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # 1) Point this to the directory that contains your WP1_extracted.csv … WP7_extracted.csv
-DATA_DIR = pathlib.Path("/Users/nikidis/Documents/GitHub/phonons/responses_reviewers/lamps_logs/clean_data")      # <— change this if the CSVs sit elsewhere
+DATA_DIR = pathlib.Path("/home/nikidis/Documents/GitHub/phonons/responses_reviewers/csv")      # <— change this if the CSVs sit elsewhere
 
-# 2) Load every file that matches WP?_extracted.csv
-csv_paths = sorted(DATA_DIR.glob("WP*_extracted.csv"))
+# 2) Load every file that matches case_*_w_extracted.csv
+csv_paths = sorted(DATA_DIR.glob("case_*_w_extracted.csv"))
 
 if not csv_paths:
     raise FileNotFoundError("No WP*_extracted.csv files found in {}".format(DATA_DIR.resolve()))

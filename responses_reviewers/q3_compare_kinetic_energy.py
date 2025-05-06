@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 # Propagation distances (nm) for each slice
 x_positions = [12.27, 14.27, 16.27, 18.27, 20.27, 22.27, 25.27]  # 24.27 omitted
 
-# Base directo/Users/nikidis/Documents/GitHub/phonons/lammps_output/slices/8_slices
-case1_dir = r"/Users/nikidis/Documents/GitHub/phonons/lammps_output/slices/8_slices"
-case4_dir = r"/Users/nikidis/Documents/GitHub/phonons/lammps_output/slices/11_slices"
+# Base directories
+case1_dir = r"/home/nikidis/Documents/GitHub/phonons/lammps_output/slices/8_slices"
+case4_dir = r"/home/nikidis/Documents/GitHub/phonons/lammps_output/slices/11_slices"
 
 # Corresponding filenames for each case
 case1_files = [
